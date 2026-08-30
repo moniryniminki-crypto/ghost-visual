@@ -1,22 +1,50 @@
 package com.ghostvisual;
 
 import net.fabricmc.api.ClientModInitializer;
+import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
+import net.fabricmc.fabric.api.client.keybinding.v1.KeyBindingHelper;
 import net.fabricmc.fabric.api.client.rendering.v1.HudRenderCallback;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.font.TextRenderer;
 import net.minecraft.client.gui.DrawableHelper;
-import net.minecraft.client.util.math.MatrixStack;
+import net.minecraft.client.option.KeyBinding;
+import net.minecraft.client.util.InputUtil;
+import net.minecraft.text.Text;
+import org.lwjgl.glfw.GLFW;
 
 public class GhostVisualClient implements ClientModInitializer {
-    public static ConfigManager CONFIG;
+    public static ConfigManager.Config CONFIG;
+    public static KeyBinding TOGGLE_KEY;
 
     @Override
     public void onInitializeClient() {
         CONFIG = ConfigManager.load();
+
+        // Register keybinding: Right Shift
+        TOGGLE_KEY = KeyBindingHelper.registerKeyBinding(new KeyBinding(
+                "key.ghostvisual.toggle",
+                InputUtil.Type.KEYSYM,
+                GLFW.GLFW_KEY_RIGHT_SHIFT,
+                "key.category.ghostvisual"
+        ));
+
+        // Listen for toggle key
+        ClientTickEvents.END_CLIENT_TICK.register(client -> {
+            while (TOGGLE_KEY.wasPressed()) {
+                if (client.player == null) continue;
+                // Toggle screen
+                if (client.currentScreen == null) {
+                    client.setScreen(new GhostVisualScreen());
+                } else {
+                    client.setScreen(null);
+                }
+            }
+        });
+
         HudRenderCallback.EVENT.register(this::onHudRender);
     }
 
-    private void onHudRender(MatrixStack matrices, float tickDelta) {
+    private void onHudRender(net.minecraft.client.util.math.MatrixStack matrices, float tickDelta) {
         MinecraftClient client = MinecraftClient.getInstance();
         if (client.player == null) return;
 
@@ -27,39 +55,46 @@ public class GhostVisualClient implements ClientModInitializer {
         double time = (client.world != null) ? client.world.getTime() + tickDelta : client.player.age + tickDelta;
         float pulse = (float)(1.0 + Math.sin(time / 8.0) * 0.12);
 
-        int x = width/2 - 96;
-        int y = height - 84;
+        // Position based on config (normalized)
+        int x = (int)(width * CONFIG.hudX) - 128;
+        int y = (int)(height * CONFIG.hudY) - 28;
 
-        // Background panel with soft blur look
-        int panelW = 196;
-        int panelH = 52;
-        DrawableHelper.fill(matrices, x - 10, y - 10, x + panelW + 10, y + panelH + 10, 0x66001122);
+        // Background panel
+        int panelW = 256;
+        int panelH = 64;
+        int bg = (int)(CONFIG.hudOpacity * 255) << 24 | 0x001122;
+        DrawableHelper.fill(matrices, x - 12, y - 12, x + panelW + 12, y + panelH + 12, bg);
 
         // Title
-        tr.drawWithShadow(matrices, "Ghost Visual", x, y - 2, 0xFFD9F1FF);
+        tr.drawWithShadow(matrices, Text.translatable("ghostvisual.title").getString(), x, y - 8, 0xFFD9F1FF);
 
-        // Pulse HP bar (demo)
-        int baseWidth = 160;
+        // Pulse HP bar
+        int baseWidth = 180;
         int pulseWidth = Math.max(6, (int)(baseWidth * pulse * (0.6 + 0.4 * CONFIG.hudScale)));
-        int barX = x + 6;
-        int barY = y + 16;
+        int barX = x + 8;
+        int barY = y + 18;
         DrawableHelper.fill(matrices, barX, barY, barX + baseWidth, barY + 12, 0x22000000);
-        int pulseColor = 0xFF4FD1FF;
-        DrawableHelper.fill(matrices, barX, barY, barX + pulseWidth, barY + 12, pulseColor);
+        DrawableHelper.fill(matrices, barX, barY, barX + pulseWidth, barY + 12, 0xFF4FD1FF);
 
-        // Small labels
-        tr.draw(matrices, "HP", barX, barY - 10, 0xBFE6F8FF);
-        String cfgText = String.format("Opacity: %.2f  Scale: %.2f", CONFIG.hudOpacity, CONFIG.hudScale);
+        // Labels
+        tr.draw(matrices, Text.translatable("ghostvisual.hud.hp").getString(), barX, barY - 10, 0xBFE6F8FF);
+        String cfgText = String.format("%.0f%%  Масштаб: %.2f", CONFIG.hudOpacity * 100.0, CONFIG.hudScale);
         tr.draw(matrices, cfgText, barX + baseWidth - tr.getWidth(cfgText), barY - 10, 0x99E6F8FF);
 
-        // Demo quickbar icons
-        int slotStartX = x + (panelW/2) - (CONFIG.quickbarSlots*18);
+        // Quickbar demo (clickable visual slots)
+        int slotStartX = x + (panelW/2) - (CONFIG.quickbarSlots * 20);
         for (int i = 0; i < CONFIG.quickbarSlots; i++) {
-            int sx = slotStartX + i * 36;
-            int sy = y + 30;
+            int sx = slotStartX + i * 40;
+            int sy = y + 34;
             int col = 0x22000000;
-            DrawableHelper.fill(matrices, sx, sy, sx + 32, sy + 32, col);
-            tr.drawWithShadow(matrices, Integer.toString(i+1), sx + 12, sy + 8, 0xFFDEE9FF);
+            DrawableHelper.fill(matrices, sx, sy, sx + 36, sy + 36, col);
+            tr.drawWithShadow(matrices, Integer.toString(i+1), sx + 14, sy + 10, 0xFFDEE9FF);
         }
+    }
+
+    public static void toggleMenu() {
+        MinecraftClient client = MinecraftClient.getInstance();
+        if (client.currentScreen == null) client.setScreen(new GhostVisualScreen());
+        else client.setScreen(null);
     }
 }
