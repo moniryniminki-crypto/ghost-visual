@@ -1,0 +1,30 @@
+{
+  "ghostvisual.title": "Ghost Visual",
+  "ghostvisual.menu.combat": "Бой",
+  "ghostvisual.menu.visual": "Визуал",
+  "ghostvisual.menu.menu": "Меню",
+
+  "ghostvisual.option.quickbar": "Быстрая панель",
+  "ghostvisual.option.quickbar.desc": "Быстрые слоты для предметов и умений.",
+
+  "ghostvisual.option.chams": "Подсветка (Chams)",
+  "ghostvisual.option.chams.desc": "Включает неоновую подсветку сущностей (можно видеть через стены при включении опции).",
+  "ghostvisual.option.chams.through": "Через стены",
+  "ghostvisual.option.chams.color": "Цвет подсветки",
+
+  "ghostvisual.option.tracers": "Трейсеры",
+  "ghostvisual.option.tracers.desc": "Рисует линии до сущностей (игроки/мобы/предметы).",
+  "ghostvisual.option.tracers.color": "Цвет линий",
+
+  "ghostvisual.option.pulseParticles": "Пульсирующие частицы",
+  "ghostvisual.option.pulseParticles.desc": "Легкий визуальный глоу вокруг целей. Может быть отключен для производительности.",
+
+  "ghostvisual.option.hudOpacity": "Непрозрачность HUD",
+  "ghostvisual.option.hudOpacity.desc": "Управляет прозрачностью панели HUD.",
+  "ghostvisual.option.hudScale": "Масштаб HUD",
+  "ghostvisual.option.hudScale.desc": "Изменяет размер элементов HUD.",
+
+  "key.ghostvisual.toggle": "Открыть Ghost Visual (правый Shift)",
+
+  "ghostvisual.hud.hp": "HP"
+}
