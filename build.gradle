@@ -32,7 +32,8 @@ dependencies {
     modImplementation "net.fabricmc:fabric-loader:${fabric_loader_version}"
     modImplementation "net.fabricmc.fabric-api:fabric-api:${fabric_api_version}"
 
-    // Optional: Mod Menu / Cloth Config can be added later
+    // For simple JSON config serialization
+    implementation 'com.google.code.gson:gson:2.10.1'
 }
 
 // Loom defaults are usually enough; keep build simple
